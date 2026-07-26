@@ -1,135 +1,20 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Clima Dinâmico por Cidade</title>
-  <style>
-    body {
-      font-family: system-ui, -apple-system, sans-serif;
-      background-color: #f4f4f9;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      margin: 0;
-    }
-
-    .card {
-      background: white;
-      padding: 30px;
-      border-radius: 16px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-      text-align: center;
-      width: 320px;
-    }
-
-    .busca-box {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 20px;
-    }
-
-    input {
-      flex: 1;
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      font-size: 0.95rem;
-      outline: none;
-    }
-
-    input:focus {
-      border-color: #3498db;
-    }
-
-    button {
-      padding: 10px 16px;
-      background-color: #3498db;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: bold;
-    }
-
-    button:hover {
-      background-color: #2980b9;
-    }
-
-    #nome-local {
-      margin: 0;
-      color: #777;
-      font-size: 1rem;
-    }
-
-    #temp-atual {
-      font-size: 3.5rem;
-      margin: 10px 0;
-      color: #2c3e50;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tempo - Previsão v1.0</title>
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+    <h2>Olá</h2>
+    <img src="img/cones_services.jpg" alt="Em Serviço">
+    <p>Aguas Claras -15.84 + -48,03</p>
+    <p>Viamão -30.08 + -51.08</p>
+    <input type="number" class="Latitude" placeholder="Latitude">
+    <input type="number" class="Longitude" placeholder="Longitude">
+    <button id="btn-Buscar">Buscar</button>
 
-  <div class="card">
-    <!-- Caixa de Entrada do Usuário -->
-    <div class="busca-box">
-      <input type="text" id="input-cidade" placeholder="Digite a cidade...">
-      <button id="btn-buscar">Buscar</button>
-    </div>
-
-    <!-- Onde o resultado vai aparecer -->
-    <h2 id="nome-local">Busque uma cidade</h2>
-    <h2>Máxima de Hoje</h2>
-    <h1 id="temp-atual">--°C</h1>
-  </div>
-
-  <script>
-    const inputCidade = document.getElementById("input-cidade");
-    const btnBuscar = document.getElementById("btn-buscar");
-
-    // Adicionamos um "ouvinte de cliques" no botão
-    btnBuscar.addEventListener("click", async () => {
-      const nomeCidade = inputCidade.value.trim();
-
-      if (!nomeCidade) {
-        alert("Por favor, digite o nome de uma cidade.");
-        return;
-      }
-
-      try {
-        // 1. O GUIA DE ENDEREÇOS (Geocoding API)
-        // Transforma o nome da cidade em latitude e longitude
-        const respostaGeo = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(nomeCidade)}&count=1`);
-        const dadosGeo = await respostaGeo.json();
-
-        // Se a API não achar a cidade, o array 'results' vem vazio
-        if (!dadosGeo.results || dadosGeo.results.length === 0) {
-          alert("Cidade não encontrada!");
-          return;
-        }
-
-        // Pegando a latitude, longitude e o nome oficial do primeiro resultado
-        const { latitude, longitude, name, country } = dadosGeo.results[0];
-
-        // 2. A COZINHA DO CLIMA (Weather API)
-        // Usamos as coordenadas descobertas no passo anterior
-        const respostaClima = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m`);
-        const dadosClima = await respostaClima.json();
-
-        // 3. SERVINDO O PRATO NA TELA
-        const temperatura = dadosClima.current.temperature_2m;
-        
-        document.getElementById("temp-atual").innerText = `${temperatura}°C`;
-        document.getElementById("nome-local").innerText = `${name}, ${country || ''}`;
-
-      } catch (erro) {
-        console.error("Erro na requisição:", erro);
-        alert("Ops! Ocorreu um erro ao buscar os dados.");
-      }
-    });
-  </script>
-
+    <script src="js/script.js"></script>
 </body>
 </html>
