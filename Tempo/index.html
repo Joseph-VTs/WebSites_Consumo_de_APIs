@@ -3,9 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Restaurante de APIs</title>
+  <title>Clima Dinâmico por Cidade</title>
   <style>
-    /* A DECORAÇÃO DO SALÃO E DA MESA (CSS) */
     body {
       font-family: system-ui, -apple-system, sans-serif;
       background-color: #f4f4f9;
@@ -16,97 +15,121 @@
       margin: 0;
     }
 
-    #card-clima {
+    .card {
       background: white;
       padding: 30px;
       border-radius: 16px;
       box-shadow: 0 10px 30px rgba(0,0,0,0.1);
       text-align: center;
-      width: 300px;
+      width: 320px;
     }
 
-    h2 { margin: 0; color: #555; font-size: 1.2rem; }
-    
+    .busca-box {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    input {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      outline: none;
+    }
+
+    input:focus {
+      border-color: #3498db;
+    }
+
+    button {
+      padding: 10px 16px;
+      background-color: #3498db;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    button:hover {
+      background-color: #2980b9;
+    }
+
+    #nome-local {
+      margin: 0;
+      color: #777;
+      font-size: 1rem;
+    }
+
     #temp-atual {
-      font-size: 4rem;
+      font-size: 3.5rem;
       margin: 10px 0;
       color: #2c3e50;
-    }
-
-    /* A bandeja dos acompanhamentos */
-    #lista-previsao {
-      list-style: none;
-      padding: 0;
-      margin-top: 20px;
-      border-top: 1px solid #eee;
-    }
-
-    #lista-previsao li {
-      display: flex;
-      justify-content: space-between;
-      padding: 10px 0;
-      border-bottom: 1px solid #eee;
-      color: #666;
     }
   </style>
 </head>
 <body>
 
-  <!-- A MESA E OS RECIPIENTES VAZIOS (HTML) -->
-  <div id="card-clima">
-    <h2>São Paulo, SP</h2>
+  <div class="card">
+    <!-- Caixa de Entrada do Usuário -->
+    <div class="busca-box">
+      <input type="text" id="input-cidade" placeholder="Digite a cidade...">
+      <button id="btn-buscar">Buscar</button>
+    </div>
+
+    <!-- Onde o resultado vai aparecer -->
+    <h2 id="nome-local">Busque uma cidade</h2>
+    <h2>Máxima de Hoje</h2>
     <h1 id="temp-atual">--°C</h1>
-    <ul id="lista-previsao">
-      <li>Aguardando a cozinha...</li>
-    </ul>
   </div>
 
-  <!-- O TRABALHO DO GARÇOM (JS) -->
   <script>
-    async function fazerPedidoNaCozinha() {
+    const inputCidade = document.getElementById("input-cidade");
+    const btnBuscar = document.getElementById("btn-buscar");
+
+    // Adicionamos um "ouvinte de cliques" no botão
+    btnBuscar.addEventListener("click", async () => {
+      const nomeCidade = inputCidade.value.trim();
+
+      if (!nomeCidade) {
+        alert("Por favor, digite o nome de uma cidade.");
+        return;
+      }
+
       try {
-        const garcom = await fetch("https://api.open-meteo.com/v1/forecast?latitude=-30.0811&longitude=-51.0233&current=temperature_2m&hourly=temperature_2m");
-        const ingredientes = await garcom.json();
+        // 1. O GUIA DE ENDEREÇOS (Geocoding API)
+        // Transforma o nome da cidade em latitude e longitude
+        const respostaGeo = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(nomeCidade)}&count=1`);
+        const dadosGeo = await respostaGeo.json();
+
+        // Se a API não achar a cidade, o array 'results' vem vazio
+        if (!dadosGeo.results || dadosGeo.results.length === 0) {
+          alert("Cidade não encontrada!");
+          return;
+        }
+
+        // Pegando a latitude, longitude e o nome oficial do primeiro resultado
+        const { latitude, longitude, name, country } = dadosGeo.results[0];
+
+        // 2. A COZINHA DO CLIMA (Weather API)
+        // Usamos as coordenadas descobertas no passo anterior
+        const respostaClima = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m`);
+        const dadosClima = await respostaClima.json();
+
+        // 3. SERVINDO O PRATO NA TELA
+        const temperatura = dadosClima.current.temperature_2m;
         
-        servirOPrato(
-          ingredientes.current.temperature_2m,
-          ingredientes.hourly.time,
-          ingredientes.hourly.temperature_2m
-        );
+        document.getElementById("temp-atual").innerText = `${temperatura}°C`;
+        document.getElementById("nome-local").innerText = `${name}, ${country || ''}`;
+
       } catch (erro) {
-        document.getElementById("lista-previsao").innerHTML = "<li>Erro no pedido.</li>";
+        console.error("Erro na requisição:", erro);
+        alert("Ops! Ocorreu um erro ao buscar os dados.");
       }
-    }
-
-    function servirOPrato(tempAgora, horasFuturas, tempsFuturas) {
-      // 1. Empratando o prato principal
-      document.getElementById("temp-atual").innerText = `${tempAgora}°C`;
-
-      // 2. Limpando a bandeja de acompanhamentos (tirando a mensagem "Aguardando...")
-      const listaHTML = document.getElementById("lista-previsao");
-      listaHTML.innerHTML = "";
-
-      // 3. Empratando as 3 próximas horas (acompanhamentos)
-      // Como o array hourly tem dezenas de horas, vamos pegar os índices 1, 2 e 3 (o 0 é o atual)
-      for (let i = 1; i <= 3; i++) {
-        // Pegando a hora e formatando (Ex: de "2026-07-25T14:00" para "14:00")
-        const horaFormatada = horasFuturas[i].split("T")[1]; 
-        const tempNaquelaHora = tempsFuturas[i];
-
-        // Criando a linha (li) e colocando na bandeja (ul)
-        listaHTML.innerHTML += `
-          <li>
-            <span>${horaFormatada}</span>
-            <strong>${tempNaquelaHora}°C</strong>
-          </li>
-        `;
-      }
-    }
-
-    // Chama o garçom assim que o cliente senta na mesa (a página carrega)
-    fazerPedidoNaCozinha();
+    });
   </script>
-  <!-- <script src="js/script.js"></script> -->
 
 </body>
 </html>
