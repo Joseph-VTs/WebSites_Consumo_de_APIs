@@ -1,18 +1,112 @@
 <!DOCTYPE html>
-<html lang="pt-br">
-
+<html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tempo - Previsão - v1.0</title>
-    <link rel="stylesheet" href="css/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Restaurante de APIs</title>
+  <style>
+    /* A DECORAÇÃO DO SALÃO E DA MESA (CSS) */
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background-color: #f4f4f9;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    #card-clima {
+      background: white;
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      text-align: center;
+      width: 300px;
+    }
+
+    h2 { margin: 0; color: #555; font-size: 1.2rem; }
+    
+    #temp-atual {
+      font-size: 4rem;
+      margin: 10px 0;
+      color: #2c3e50;
+    }
+
+    /* A bandeja dos acompanhamentos */
+    #lista-previsao {
+      list-style: none;
+      padding: 0;
+      margin-top: 20px;
+      border-top: 1px solid #eee;
+    }
+
+    #lista-previsao li {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid #eee;
+      color: #666;
+    }
+  </style>
 </head>
-
 <body>
-    <h1>Olá</h1>
-    <div id="my-image"></div>
-    <img id="my-image" src="img/cones_services.jpg" alt="Em Manutenção">
-    <script src="js/script.js"></script>
-</body>
 
+  <!-- A MESA E OS RECIPIENTES VAZIOS (HTML) -->
+  <div id="card-clima">
+    <h2>São Paulo, SP</h2>
+    <h1 id="temp-atual">--°C</h1>
+    <ul id="lista-previsao">
+      <li>Aguardando a cozinha...</li>
+    </ul>
+  </div>
+
+  <!-- O TRABALHO DO GARÇOM (JS) -->
+  <script>
+    async function fazerPedidoNaCozinha() {
+      try {
+        const garcom = await fetch("https://api.open-meteo.com/v1/forecast?latitude=-30.0811&longitude=-51.0233&current=temperature_2m&hourly=temperature_2m");
+        const ingredientes = await garcom.json();
+        
+        servirOPrato(
+          ingredientes.current.temperature_2m,
+          ingredientes.hourly.time,
+          ingredientes.hourly.temperature_2m
+        );
+      } catch (erro) {
+        document.getElementById("lista-previsao").innerHTML = "<li>Erro no pedido.</li>";
+      }
+    }
+
+    function servirOPrato(tempAgora, horasFuturas, tempsFuturas) {
+      // 1. Empratando o prato principal
+      document.getElementById("temp-atual").innerText = `${tempAgora}°C`;
+
+      // 2. Limpando a bandeja de acompanhamentos (tirando a mensagem "Aguardando...")
+      const listaHTML = document.getElementById("lista-previsao");
+      listaHTML.innerHTML = "";
+
+      // 3. Empratando as 3 próximas horas (acompanhamentos)
+      // Como o array hourly tem dezenas de horas, vamos pegar os índices 1, 2 e 3 (o 0 é o atual)
+      for (let i = 1; i <= 3; i++) {
+        // Pegando a hora e formatando (Ex: de "2026-07-25T14:00" para "14:00")
+        const horaFormatada = horasFuturas[i].split("T")[1]; 
+        const tempNaquelaHora = tempsFuturas[i];
+
+        // Criando a linha (li) e colocando na bandeja (ul)
+        listaHTML.innerHTML += `
+          <li>
+            <span>${horaFormatada}</span>
+            <strong>${tempNaquelaHora}°C</strong>
+          </li>
+        `;
+      }
+    }
+
+    // Chama o garçom assim que o cliente senta na mesa (a página carrega)
+    fazerPedidoNaCozinha();
+  </script>
+  <!-- <script src="js/script.js"></script> -->
+
+</body>
 </html>
