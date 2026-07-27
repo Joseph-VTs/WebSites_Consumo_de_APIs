@@ -1,41 +1,43 @@
-async function LerArquivoJson() {
+async function lerArquivosJson() {
+    const Cards = document.querySelector('.Cards');
     
-    try {
+    try{
         const esseArquivo = await fetch('../../Docs_JSON/produtos_simples.json');
-        const convercaoJson = await esseArquivo.json();
-
-        const card = document.querySelector('.Card');
+        const convecaoJson = await esseArquivo.json()
         const imgPasta = ('../../Docs_JSON/qualidade_premiada.jpg');
-
-        convercaoJson.forEach(item => {
-            if (!item.promo) {
-                card.innerHTML += `
-                    <div class="IMG">
-                        <img src="${imgPasta}" alt="Produto">
-                    </div>
-                    <div class="Desc">
-                        <span class="Nome">${item.nome}</span>
-                        <span class="Preco">${item.preco}</span>
+        
+        convecaoJson.forEach(item => {
+            if(!item.promo){
+                // Com Promo
+                Cards.innerHTML += `
+                    <div class="Card">
+                        <div class="IMG">
+                            <img src="${imgPasta}" alt="Produto">
+                        </div>
+                        <div class="Desc">
+                            <span class="Nome">${item.nome}</span>
+                            <span class="Preco">${item.preco}</span>
+                        </div>
                     </div>
                 `;
             } else{
-                card.innerHTML += `
+                Cards.innerHTML += `
+                    <div class="Card">
                     <span class="Promo">${item.promo}</span>
-                    <div class="IMG">
-                        <img src="${imgPasta}" alt="Produto"></img>
-                    </div>
-                    <div class="Desc">
-                        <span class="Nome">${item.nome}</span>
-                        <span class="Preco">${item.preco}</span>
+                        <div class="IMG">
+                            <img src="${imgPasta}" alt="Produto">
+                        </div>
+                        <div class="Desc">
+                            <span class="Nome">${item.nome}</span>
+                            <span class="Preco">${item.preco}</span>
+                        </div>
                     </div>
                 `;
-                const promo = document.querySelector('.Promo');
-                promo.style.display = 'flex';
             }
         });
-    } catch {
-        console.log('Erro no catch');
+    }catch{
+        console.log("Verifique: Deu Erro");
     }
 }
 
-LerArquivoJson();
+lerArquivosJson();
