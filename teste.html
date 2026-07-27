@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste com Leitura Arquivo JSON</title>
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+            box-sizing: border-box;
+            text-decoration: none;
+            list-style: none;
+            outline: none;
+            border: none;
+            font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+            font-size: 1.04rem;
+        }
+
+        .Container {
+            width: 100%;
+            height: auto;
+            padding: 8px;
+            background-color: seashell;
+
+            .Div-info {
+                width: 100%;
+                height: auto;
+                background-color: cadetblue;
+                padding: 12px;
+                font-size: 1.4rem;
+                margin-bottom: 24px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+
+                .Texto {
+                    font-size: 0.92rem;
+                    font-weight: 500;
+                    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+                }
+
+                .Ver-Mais,
+                .Ver-Menos {
+                    padding: 6px 14px;
+                    background-color: green;
+                    font-family: 'Times New Roman', Times, serif;
+                    color: snow;
+                    font-weight: 500;
+                    font-size: 0.9rem;
+                    letter-spacing: 2px;
+                    border-radius: 0 20%;
+                    transition: all 0.3s ease-in-out;
+
+                    &:hover {
+                        transform: scale(1.06) rotate(2deg);
+                        background-color: rgba(0, 0, 0, 0.1);
+                        cursor: pointer;
+                        text-decoration: underline;
+                    }
+                }
+            }
+
+            .Primeiro,
+            .Restante {
+                width: 100%;
+                height: auto;
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+                gap: 22px;
+                position: relative;
+
+                .Card {
+                    background-color: skyblue;
+                    width: 100%;
+                    position: relative;
+                    border-radius: .6rem;
+
+                    .Promo {
+                        position: absolute;
+                        bottom: 6px;
+                        right: 0px;
+                        background-color: mediumseagreen;
+                        padding: 4px;
+                        width: 50%;
+                        color: yellow;
+                        border-radius: 0px 12px;
+                        transform: rotate(-12deg);
+                        justify-content: center;
+                        text-align-last: center;
+                        font-weight: 700;
+                        letter-spacing: 1px;
+                        font-size: 0.8rem;
+                    }
+
+                    .IMG {
+                        width: 100%;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        border-radius: 12%;
+                        overflow: hidden;
+                        background-color: transparent;
+
+                        img {
+                            width: 100%;
+                            height: 100%;
+                        }
+                    }
+
+                    .Desc {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 12px;
+                        margin-top: 6px;
+
+                        .Nome {
+                            font-size: 0.92rem;
+                            font-weight: 100;
+                        }
+
+                        .Preco {
+                            font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+                            padding: 0px 8px;
+                            font-size: 1rem;
+                            font-weight: 700;
+                            color: snow;
+                        }
+                    }
+                }
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="Container">
+        <div class="Div-info">
+            <span class="Texto">
+                Produtos de Qualidade
+            </span>
+            <button class="Ver-Mais">Ver Mais</button>
+        </div>
+        <!-- <div class="Primeiros">
+            <div class="Card">
+                <span class="Promo"></span>
+                <div class="IMG"></div>
+                <div class="Desc">
+                    <span class="Nome"></span>
+                    <span class="Preco"></span>
+                </div>
+            </div>
+        </div> -->
+        <!-- <div class="Restantes">
+            <div class="Card">
+                <span class="Promo"></span>
+                <div class="IMG"></div>
+                <div class="Desc">
+                    <span class="Nome"></span>
+                    <span class="Preco"></span>
+                </div>
+            </div>
+        </div> -->
+    </div>
+    <script>
+        async function lerJson() {
+            try {
+                const Container = document.querySelector('.Container');
+                // const Preco_ = document.querySelector('.Preco');
+                const arquivoJson = await fetch('Docs_JSON/produtos_simples.json');
+                const imgPasta = 'Docs_JSON/qualidade_premiada.jpg';
+                const convercao = await arquivoJson.json();
+
+                const Primeiro = document.createElement('div');
+                Primeiro.classList.add('Primeiro');
+                const primeirosItens = convercao.slice(0, 10);
+
+                const Restante = document.createElement('div');
+                Restante.classList.add('Restante');
+
+                let conteudo = '';
+                primeirosItens.forEach(item => {
+                    if (!item.promo) {
+                        conteudo += `
+                            <div class="Card">
+                                <div class="IMG">
+                                    <img src="${imgPasta}" alt="Produto" loading="lazy"></img>
+                                </div>
+                                <div class="Desc">
+                                    <span class="Preco">${item.nome}</span>
+                                    <span class="Preco">${item.preco}</span>
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        conteudo += `
+                        <div class="Card">
+                            <span class="Promo">${item.promo}</span>
+                                <div class="IMG">
+                                    <img src="${imgPasta}" alt="Produto" loading="lazy"></img>
+                                </div>
+                                <div class="Desc">
+                                    <span class="Preco">${item.nome}</span>
+                                    <span class="Preco" style="text-decoration: line-through;">${item.preco}</span>
+                                </div>
+                            </div>
+                        `;
+                    }
+                });
+
+                const btnVerMais = document.querySelector('.Ver-Mais');
+                Primeiro.innerHTML += conteudo;
+                btnVerMais.addEventListener("click", () => {
+                    Primeiro.style.display = 'none';
+                    convercao.forEach(item => {
+                        if (!item.promo) {
+                            conteudo += `
+                                <div class="Card">
+                                    <div class="IMG">
+                                        <img src="${imgPasta}" alt="Produto" loading="lazy"></img>
+                                    </div>
+                                    <div class="Desc">
+                                        <span class="Preco">${item.nome}</span>
+                                        <span class="Preco">${item.preco}</span>
+                                    </div>
+                                </div>
+                            `;
+                        } else {
+                            conteudo += `
+                            <div class="Card">
+                                <span class="Promo">${item.promo}</span>
+                                    <div class="IMG">
+                                        <img src="${imgPasta}" alt="Produto" loading="lazy"></img>
+                                    </div>
+                                    <div class="Desc">
+                                        <span class="Preco">${item.nome}</span>
+                                        <span class="Preco" style="text-decoration: line-through;">${item.preco}</span>
+                                    </div>
+                                </div>
+                            `;
+                        }
+                    });
+
+                    Restante.innerHTML += conteudo;
+                    btnVerMais.style.display = 'none';
+
+                    const btnVerMenos = document.createElement('button');
+                    btnVerMenos.classList.add('Ver-Menos');
+                    btnVerMenos.textContent = 'Ver Menos';
+                    btnVerMenos.style.display = 'block';
+
+                    const divBtns = document.querySelector('.Div-info');
+                    divBtns.appendChild(btnVerMenos);
+
+                    btnVerMenos.addEventListener("click", () => {
+                        Restante.style.display = 'none';
+                        Primeiro.style.display = 'grid';
+                        btnVerMais.style.display = 'block';
+                        btnVerMenos.style.display = 'none';
+                    });
+                });
+
+                Container.appendChild(Restante);
+                Container.appendChild(Primeiro);
+            } catch (error) {
+                console.log('Verifique: Erro no Catch', error);
+            }
+        }
+        lerJson();
+    </script>
+</body>
+
+</html>
